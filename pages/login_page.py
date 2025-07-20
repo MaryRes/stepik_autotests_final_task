@@ -1,7 +1,7 @@
 from selenium.common import InvalidSelectorException, NoSuchElementException
 
 from .base_page import BasePage
-from .locators import LoginPageLocators
+from .locators import LoginPageLocators, MainPaigeLocators
 import selenium
 
 
@@ -35,3 +35,8 @@ class LoginPage(BasePage):
         # реализуйте проверку, что есть форма регистрации на странице
         register_form = BasePage.is_element_present(self, *LoginPageLocators.REGISTRATION_FORM)
         assert register_form, "absence of registration form"
+
+    def go_to_login_page(self):
+        link = self.browser.find_element(*MainPaigeLocators.LOGIN_LINK)
+        link.click()
+
