@@ -1,7 +1,7 @@
 import math
 
 from selenium.common.exceptions import NoSuchElementException, NoAlertPresentException
-from
+
 
 class BasePage:
     def __init__(self, browser, url, timeout=10):
@@ -32,6 +32,10 @@ class BasePage:
             alert.accept()
         except NoAlertPresentException:
             print("No second alert presented")
+
+    @staticmethod
+    def get_text_from_elements(outer_element, locator):
+        return [element.text for element in outer_element.find_elements(*locator)]
 
 
 

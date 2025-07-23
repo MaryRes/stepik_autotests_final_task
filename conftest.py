@@ -1,7 +1,7 @@
 import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-
+from .translations import translations
 
 
 def pytest_addoption(parser):
@@ -39,3 +39,9 @@ def browser(request):
     yield browser
     print("\nquit browser..")
     browser.quit()
+
+@pytest.fixture(scope="function")
+def translation_fixture(request):
+    """Фикстура для получения переводов в зависимости от выбранного языка."""
+    user_language = request.config.getoption("language")
+    return translations.get(user_language, translations['en'])
