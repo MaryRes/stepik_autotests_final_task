@@ -12,7 +12,7 @@ class LoginPage(BasePage):
         self.should_be_register_form()
 
     def should_be_login_url(self):
-        # реализуйте проверку на корректный url адрес
+        #  проверка на корректный url адрес
         current_url = self.browser.current_url
         login = "login"
         assert login in current_url.lower(), "absence of login word in url"
