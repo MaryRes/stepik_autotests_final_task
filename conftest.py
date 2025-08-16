@@ -4,6 +4,7 @@ from selenium.webdriver.chrome.options import Options
 from .translations import translations
 
 
+
 def pytest_addoption(parser):
     """Добавление опций командной строки для выбора браузера и языка."""
 
@@ -24,9 +25,12 @@ def browser(request):
     # Устанавливаем настройки браузера для языка
     options = Options()
     options.add_experimental_option('prefs', {'intl.accept_languages': user_language})
+    options.add_argument('headless')
+    options.add_argument('window-size=1920x935')
     # Инициализируем браузер в зависимости от выбранного
     if browser_name == "chrome":
         browser = webdriver.Chrome(options=options)
+
     elif browser_name == "firefox":
         options = webdriver.FirefoxOptions()
         options.set_preference("intl.accept_languages", user_language)
