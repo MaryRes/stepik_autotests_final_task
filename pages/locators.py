@@ -1,7 +1,14 @@
 from selenium.webdriver.common.by import By
 
-class MainPaigeLocators:
+
+class BasePageLocators:
     LOGIN_LINK = (By.CSS_SELECTOR, "#login_link")
+    LOGIN_LINK_INVALID = (By.CSS_SELECTOR, "#login_link_inc")
+
+
+class MainPaigeLocators:
+    #LOGIN_LINK = (By.CSS_SELECTOR, "#login_link")
+    pass
 
 class LoginPageLocators:
     LOGIN_FORM = (By.CSS_SELECTOR, 'form[id*="login"]')
