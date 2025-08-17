@@ -1,15 +1,22 @@
 import math
+import time
 from typing import List, Tuple, Optional, Union
-from selenium.common.exceptions import NoSuchElementException, NoAlertPresentException
+from selenium.common.exceptions import NoSuchElementException, NoAlertPresentException, TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebDriver
-import time
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+from stepik_autotests_final_task.pages.locators import BasePageLocators, LoginPageLocators
+from ..decorators import Decorators
+
+
 
 
 class BasePage:
     """Базовый класс страницы. Содержит общие методы для всех страниц."""
 
-    def __init__(self, browser: WebDriver, url: str, timeout: int = 10, implicitly_wait_on: bool = True):
+    def __init__(self, browser: WebDriver, url: str, timeout: int = 10, implicitly_wait_on: bool = True, poll_frequency=1):
         """
         :param browser: экземпляр WebDriver
         :param url: адрес страницы
@@ -18,13 +25,28 @@ class BasePage:
         """
         self.browser = browser
         self.url = url
+        self.wait = WebDriverWait(browser, timeout=timeout, poll_frequency=poll_frequency)
         if implicitly_wait_on:
             self.browser.implicitly_wait(timeout)
+
+
+    def go_to_login_page(self):
+        """Переходит на страницу логина."""
+        # Используем явное ожидание, чтобы дождаться кликабельности ссылки
+
+        try:
+            link = self.wait.until(EC.element_to_be_clickable(BasePageLocators.LOGIN_LINK))
+            link.click()
+            # Явное ожидание, чтобы дождаться загрузки страницы
+            self.wait.until(EC.url_contains("login"))
+        except Exception as e:
+            print(f"Ошибка при переходе на страницу логина: {e}")
 
 
     def open(self) -> None:
         """Открывает страницу."""
         self.browser.get(self.url)
+
 
     def take_screenshot(self, name: str) -> str:
         """
@@ -35,6 +57,7 @@ class BasePage:
         filename = f"{name}.png"
         self.browser.save_screenshot(filename)
         return filename
+
 
     def is_element_present(self, how: By, what: str) -> bool:
         """
@@ -48,6 +71,36 @@ class BasePage:
             return True
         except NoSuchElementException:
             return False
+
+
+    def is_not_element_present(self, how, what):
+        """ Проверяет, что элемент не присутствует на странице.
+        :param how: способ поиска (By.ID, By.CSS_SELECTOR и т.д.)
+        :param what: значение локатора
+        :return: True если элемент не найден, иначе False
+        """
+        try:
+            self.wait.until(EC.presence_of_element_located((how, what)))
+        except TimeoutException:
+            return True
+
+        return False
+
+
+    def is_element_disappeared(self, how, what):
+        """ Проверяет, что элемент исчез с страницы.
+        :param how: способ поиска (By.ID, By.CSS_SELECTOR и т.д.)
+        :param what: значение локатора
+        :return: True если элемент исчез, иначе False
+        """
+
+        try:
+            self.wait.until_not(EC.presence_of_element_located((how, what)))
+        except TimeoutException:
+            return False
+
+        return True
+
 
     def solve_quiz_and_get_code(self) -> None:
         """
@@ -69,21 +122,26 @@ class BasePage:
 
     # ====== Методы для работы с текстом элементов ======
 
+
     def _get_element_text(self, locator: Tuple[By, str]) -> str:
         """Возвращает текст первого найденного элемента по локатору."""
         return self.browser.find_element(*locator).text.strip()
+
 
     def _get_elements_texts(self, locator: Tuple[By, str]) -> List[str]:
         """Возвращает список текстов всех найденных элементов по локатору."""
         return [el.text.strip() for el in self.browser.find_elements(*locator)]
 
+
     def get_text_from_element(self, locator: Tuple[By, str]) -> str:
         """Публичная версия для получения текста одного элемента."""
         return self._get_element_text(locator)
 
+
     def get_texts_from_elements(self, locator: Tuple[By, str]) -> List[str]:
         """Публичная версия для получения текста всех элементов."""
         return self._get_elements_texts(locator)
+
 
     @staticmethod
     def wait_certain_seconds_before_action(seconds: int = 10) -> None:
@@ -98,6 +156,8 @@ class BasePage:
         text_b = self._get_element_text(locator_b)
         assert text_a == text_b, f"'{text_a}' != '{text_b}'"
 
+
+
     def assert_texts_equal(self, locators: List[Union[Tuple[By, str], List[Tuple[By, str]]]]) -> None:
         """Проверяет, что все элементы из списка имеют одинаковый текст."""
         texts = []
@@ -108,6 +168,7 @@ class BasePage:
                 for sublocator in locator:
                     texts.extend(self._get_elements_texts(sublocator))
         assert len(set(texts)) == 1, f"Тексты не совпадают: {texts}"
+
 
     def assert_contains_any(self, source_locator: Tuple[By, str], target_locators: List[Union[Tuple[By, str], List[Tuple[By, str]]]]) -> None:
         """
@@ -123,6 +184,7 @@ class BasePage:
                     if any(text in source_text for text in self._get_elements_texts(sublocator)):
                         return
         raise AssertionError(f"Ни один элемент {target_locators} не найден в тексте '{source_text}'")
+
 
     def check_same_value_in_different_sections(
         self,
@@ -154,6 +216,7 @@ class BasePage:
         if expected_value is None:
             expected_value = found_values[0]
 
+
         def to_float(val: str) -> Optional[float]:
             try:
                 return float("".join(ch for ch in val if ch.isdigit() or ch in ".,").replace(",", "."))
@@ -170,3 +233,7 @@ class BasePage:
             return False, f"Значения не совпадают. Ожидалось: '{expected_value}', найдено: {found_values}"
 
         return True, ""
+
+    def should_be_login_link(self):
+        assert self.is_element_present(*BasePageLocators.LOGIN_LINK), "Login link is not presented"
+
