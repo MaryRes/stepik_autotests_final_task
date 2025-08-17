@@ -1,6 +1,8 @@
 from .base_page import BasePage
 from .locators import ProductPageLocators
 from ..decorators import Decorators
+
+import time
 #from locators import ProductPageLocators
 
 
@@ -128,3 +130,41 @@ class ProductPage(BasePage):
         if not result:
             error_message = f"Product price '{self.product_price}' does not match basket total: {error_message}"
         assert result, error_message
+
+    @Decorators.print_function_name
+    @Decorators.screenshot_on_error
+    def should_not_be_success_message(self, success_message: str):
+        """
+        Проверяет, что нет сообщения об успешном добавлении товара в корзину.
+        :return: None
+        """
+        all_messages = self.get_texts_from_elements(ProductPageLocators.MESSAGE_ELEMENT)
+        for message in all_messages:
+            if success_message in message:
+                raise AssertionError(
+                    f"Success message '{success_message}' is presented after click on product page, but should not be"
+                )
+        # если ни одного совпадения нет — тест проходит
+
+
+    @Decorators.print_function_name
+    @Decorators.screenshot_on_error
+    def should_success_message_disappeared(self, success_message: str):
+        """
+        Проверяет, что сообщение об успешном добавлении товара в корзину исчезло.
+        :param success_message: ожидаемый текст сообщения
+        :return: None
+        """
+        timeout = self.wait._timeout  # берём таймаут из WebDriverWait
+        poll_frequency = self.wait._poll  # частота опроса
+
+        end_time = time.time() + timeout
+        while time.time() < end_time:
+            messages = self.get_texts_from_elements(ProductPageLocators.MESSAGE_ELEMENT)
+            if all(success_message not in message for message in messages):
+                # Сообщения с нужным текстом нет — тест прошёл
+                return
+            time.sleep(poll_frequency)
+
+        # Если дошли до конца таймаута и сообщение всё ещё есть
+        raise AssertionError(f"Success message '{success_message}' did not disappear after adding product to basket")

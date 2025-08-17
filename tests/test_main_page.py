@@ -2,10 +2,10 @@ import pytest
 import selenium
 from selenium.webdriver.common.by import By
 
-from .pages.main_page import MainPage
-from .pages.login_page import LoginPage
+from stepik_autotests_final_task.pages.main_page import MainPage
+from stepik_autotests_final_task.pages.login_page import LoginPage
 
-from .pages.locators import MainPaigeLocators, LoginPageLocators
+from stepik_autotests_final_task.pages.locators import MainPaigeLocators, LoginPageLocators
 
 link = "http://selenium1py.pythonanywhere.com/"
 
