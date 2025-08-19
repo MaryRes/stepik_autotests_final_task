@@ -5,9 +5,9 @@ from stepik_autotests_final_task.pages.login_page import LoginPage
 from stepik_autotests_final_task.pages.main_page import MainPage
 from stepik_autotests_final_task.pages.base_page import BasePage
 
-from stepik_autotests_final_task.pages.locators import MainPaigeLocators, LoginPageLocators
+from stepik_autotests_final_task.pages.locators import MainPaigeLocators, LoginPageLocators, BasePageLocators
 
-login_link_element = MainPaigeLocators.LOGIN_LINK
+login_link_element = BasePageLocators.LOGIN_LINK
 login_form_element = LoginPageLocators.LOGIN_FORM
 registration_form_element = LoginPageLocators.REGISTRATION_FORM
 
@@ -17,7 +17,7 @@ login_page_link = "http://selenium1py.pythonanywhere.com/fi/accounts/login/"
 link = "http://selenium1py.pythonanywhere.com"
 
 def test_should_be_login_page(browser):
-    # НЕ ПОНЯТНО
+    #
     page = LoginPage(browser, link)
     page.open()
     page.should_be_login_page()
