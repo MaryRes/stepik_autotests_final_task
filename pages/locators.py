@@ -5,10 +5,13 @@ class BasePageLocators:
     LOGIN_LINK = (By.CSS_SELECTOR, "#login_link")
     LOGIN_LINK_INVALID = (By.CSS_SELECTOR, "#login_link_inc")
 
+class BasketPageLocators:
+    BASKET_BOX = (By.CSS_SELECTOR, 'div[id="content_inner"]')
+    ITEMS_IN_BASKET = (By.CSS_SELECTOR, 'div[id="content_inner"] form')
 
 class MainPaigeLocators:
-    #LOGIN_LINK = (By.CSS_SELECTOR, "#login_link")
-    pass
+    # ссылка на корзину в шапке сайта
+    BASKET_LINK_IN_HEADER = (By.CSS_SELECTOR, 'div[class*="basket-mini"] > span.btn-group > a[href*="basket"]')
 
 class LoginPageLocators:
     LOGIN_FORM = (By.CSS_SELECTOR, 'form[id*="login"]')
@@ -16,6 +19,9 @@ class LoginPageLocators:
 
 class ProductPageLocators:
     ADD_TO_BASKET_BTN = (By.CSS_SELECTOR, '[class*="btn-add-to-basket"]')
+    # ссылка на корзину в шапке сайта
+    BASKET_LINK_IN_HEADER = (By.CSS_SELECTOR, 'div[class*="basket-mini"] > span.btn-group > a[href*="basket"]')
+    # селектор для названия продукта, который будет одинаковым
     # до и после клика на add_to_basket
     PRODUCT_NAME = (By.CSS_SELECTOR, '[class*=product_main] h1')  # до и после клика один и тот же селектор
     PRODUCT_PRICE = (By.CSS_SELECTOR, '[class*=price_color]')  # до и после клика один и тот же селектор
