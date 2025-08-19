@@ -1,9 +1,13 @@
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
 from .base_page import BasePage
 from .locators import ProductPageLocators
 from ..decorators import Decorators
 
+
 import time
-#from locators import ProductPageLocators
+
 
 
 @Decorators.print_function_name
@@ -19,6 +23,7 @@ class ProductPage(BasePage):
         super().__init__(browser, url)
         self.product_name = None
         self.product_price = None
+        self.wait = WebDriverWait(self.browser, timeout=10, poll_frequency=1)
 
     @Decorators.print_function_name
     @Decorators.screenshot_on_error
@@ -67,6 +72,19 @@ class ProductPage(BasePage):
         """
         add_to_basket_button = self.browser.find_element(*ProductPageLocators.ADD_TO_BASKET_BTN)
         add_to_basket_button.click()
+
+    @Decorators.print_function_name
+    @Decorators.screenshot_on_error
+    def go_to_basket_from_header(self):
+        """
+        Переходит в корзину по ссылке в шапке сайта.
+        """
+        basket_link_locator = ProductPageLocators.BASKET_LINK_IN_HEADER
+        # Используем явное ожидание, чтобы дождаться кликабельности ссылки
+        basket_link = self.wait.until(EC.element_to_be_clickable(basket_link_locator))
+        basket_link.click()
+        # Явное ожидание, чтобы дождаться загрузки страницы корзины
+        self.wait.until(lambda driver: driver.current_url.endswith("/basket/"))
 
     @Decorators.print_function_name
     @Decorators.screenshot_on_error
@@ -168,3 +186,5 @@ class ProductPage(BasePage):
 
         # Если дошли до конца таймаута и сообщение всё ещё есть
         raise AssertionError(f"Success message '{success_message}' did not disappear after adding product to basket")
+
+
