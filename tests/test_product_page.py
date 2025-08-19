@@ -3,6 +3,8 @@ from selenium.webdriver.remote.webdriver import WebDriver
 from typing import Any
 from stepik_autotests_final_task.pages.product_page import ProductPage
 from stepik_autotests_final_task.decorators import Decorators
+from stepik_autotests_final_task.urls import Urls
+from stepik_autotests_final_task.pages.basket_page import BasketPage
 
 # ================================================
 # Test run commands:
@@ -19,6 +21,7 @@ link_list = [f"{product_base_link}/?promo=offer{no}" for no in range(10)]
 bugged_link = f"{product_base_link}/?promo=offer7"
 link_list.remove(bugged_link)  # Remove the buggy link from the main list
 
+product_page_link = Urls.product_page_url("the-city-and-the-stars_95", "en-gb")
 
 class TestProductPage:
     """
@@ -172,7 +175,7 @@ class TestProductPage:
         page.open()
         page.should_be_login_link()
 
-    @pytest.mark.new
+    @pytest.mark.headed
     @pytest.mark.parametrize("link", [product_page_link])
     @Decorators.no_implicit_wait
     def test_guest_can_go_to_login_page_from_product_page(self, browser, link: str) -> None:
@@ -193,3 +196,35 @@ class TestProductPage:
         print(f"Expected URL to contain 'login': {link}")
         assert "login" in browser.current_url, "Not on the login page"
 
+    @pytest.mark.ui
+    @pytest.mark.headed
+    @pytest.mark.parametrize("link", [product_page_link])
+    def test_guest_cant_see_product_in_basket_opened_from_product_page(
+            self,
+            browser: WebDriver,
+            link: str,
+            translation_fixture: dict[str, str]
+    ) -> None:
+        """
+        Checks that a guest cannot see a product in the basket when opened from the product page.
+
+        :param browser: WebDriver instance
+        :param link: URL of the product page
+        :param translation_fixture: Dictionary with translations
+        """
+        # Гость открывает страницу товара
+        page = ProductPage(browser, link)  # ⬅️ Используйте параметр link
+        page.open()
+
+        # Переходит в корзину по кнопке в шапке
+        page.go_to_basket_from_header()
+
+        # Проверяем, что мы на странице корзины
+        basket_page = BasketPage(browser, browser.current_url)
+        basket_page.should_be_basket_page()
+
+        # Получаем сообщение о пустой корзине из фикстуры
+        basket_empty_message = translation_fixture["basket_is_empty"]
+
+        # Проверяем что корзина пуста
+        assert basket_page.is_basket_empty(basket_empty_message), "Basket is not empty, but should be empty"
