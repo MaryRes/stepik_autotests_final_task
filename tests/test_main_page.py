@@ -45,7 +45,6 @@ def test_guest_cant_see_product_in_basket_opened_from_main_page(browser, transla
 class TestLoginFromMainPage:
     """ Class for testing login functionality from the main page."""
 
-    @pytest.mark.new
     @pytest.mark.parametrize("link", [main_page_url])
     def test_guest_can_go_to_login_page(self, browser, link):
         """
@@ -59,6 +58,7 @@ class TestLoginFromMainPage:
         page.open()  # открываем страницу
         page.go_to_login_page()  # выполняем метод страницы — переходим на страницу логина
 
+    @pytest.mark.parametrize("link", [main_page_url])
     def test_guest_should_see_login_link(self, browser, link):
         """
         Checks that the login link is present on the main page.
