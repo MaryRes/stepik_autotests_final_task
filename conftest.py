@@ -1,7 +1,7 @@
 import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from .translations import translations
+from .translations import translations, SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE
 import time
 from stepik_autotests_final_task.urls import Urls
 from stepik_autotests_final_task.problematic_urls import ProblematicUrls
@@ -29,6 +29,12 @@ def browser(request):
     # Получаем параметры командной строки
     browser_name = request.config.getoption("browser_name")
     user_language = request.config.getoption("language")
+
+    # Автоматически определяем валидный язык
+    valid_language = get_valid_language(user_language)
+
+    if user_language != valid_language:
+        print(f"⚠️  Язык '{user_language}' не поддерживается. Используется '{valid_language}'")
 
     # Проверяем есть ли маркер headed у теста
     has_headed_marker = request.node.get_closest_marker('headed') is not None
@@ -67,11 +73,41 @@ def browser(request):
     print("\nquit browser..")
     browser.quit()
 
+def get_system_language():
+    """Получает язык системы."""
+    try:
+        system_lang, _ = locale.getdefaultlocale()
+        if system_lang:
+            return system_lang.lower()
+    except:
+        pass
+    return DEFAULT_LANGUAGE
+
+def get_valid_language(user_language):
+    """
+    Определяет валидный язык на основе пользовательских настроек.
+    Если язык не поддерживается, возвращает английский.
+    """
+    if not user_language or user_language == 'auto':
+        user_language = get_system_language()
+    # Проверяем полное совпадение
+    if user_language in SUPPORTED_LANGUAGES:
+        return SUPPORTED_LANGUAGES[user_language]
+
+    # Проверяем основную часть языка (например, 'en' из 'en-US')
+    language_base = user_language.split('-')[0].lower()
+    if language_base in SUPPORTED_LANGUAGES:
+        return SUPPORTED_LANGUAGES[language_base]
+
+    # Если язык не найден, возвращаем английский
+    return DEFAULT_LANGUAGE
+
 @pytest.fixture(scope="function")
 def translation_fixture(request):
     """Фикстура для получения переводов в зависимости от выбранного языка."""
     user_language = request.config.getoption("language")
-    return translations.get(user_language, translations['en'])
+    valid_language = get_valid_language(user_language)
+    return translations.get(valid_language, translations[DEFAULT_LANGUAGE])
 
 
 @pytest.fixture(autouse=True)
@@ -109,50 +145,53 @@ def pytest_collection_modifyitems(config, items):
 # ===
 # get links
 @pytest.fixture(scope="function")
-def main_page_url(language: str = "en-gb") -> str:
+def main_page_url(request) -> str:
+    """Returns the main page URL for the detected language.
+    :param request: pytest request object to access command line options
     """
-    Returns the main page URL for the specified language.
-    :param language: Language code (default is 'en-gb')
-    :return: Main page URL
-    """
-    return Urls.main_page_url(language)
+    user_language = request.config.getoption("language")
+    valid_language = get_valid_language(user_language)
+    return Urls.main_page_url(valid_language)
 
 @pytest.fixture(scope="function")
-def login_page_url(language: str = "en-gb") -> str:
+def login_page_url(request) -> str:
+    """Returns the login page URL for the detected language.
+    :param request: pytest request object to access command line options
     """
-    Returns the login page URL for the specified language.
-    :param language: Language code (default is 'en-gb')
-    :return: Login page URL
-    """
-    return Urls.login_page_url(language)
+    user_language = request.config.getoption("language")
+    valid_language = get_valid_language(user_language)
+    return Urls.login_page_url(valid_language)
 
 @pytest.fixture(scope="function")
-def product_page_url(product_slug: str, language: str = "en-gb") -> str:
+def product_page_url(product_slug: str, request) -> str:
     """
-    Returns the product page URL for the specified product slug and language.
+    Returns the product page URL for the detected language.
     :param product_slug: Slug of the product
-    :param language: Language code (default is 'en-gb')
-    :return: Product page URL
+    :param request: pytest request object to access command line options
     """
-    return Urls.product_page_url(product_slug, language)
+    user_language = request.config.getoption("language")
+    valid_language = get_valid_language(user_language)
+    return Urls.product_page_url(product_slug, valid_language)
 
 @pytest.fixture(scope="function")
-def basket_page_url(language: str = "en-gb") -> str:
+def basket_page_url(request) -> str:
     """
-    Returns the basket page URL for the specified language.
-    :param language: Language code (default is 'en-gb')
-    :return: Basket page URL
+    Returns the basket page URL for the detected language.
+    :param request: pytest request object to access command line options
     """
-    return Urls.basket_page_url(language)
+    user_language = request.config.getoption("language")
+    valid_language = get_valid_language(user_language)
+    return Urls.basket_page_url(valid_language)
 
 @pytest.fixture(scope="function")
-def catalogue_page_url(language: str = "en-gb") -> str:
+def catalogue_page_url(request) -> str:
     """
-    Returns the catalogue page URL for the specified language.
-    :param language: Language code (default is 'en-gb')
-    :return: Catalogue page URL
+    Returns the catalogue page URL for the detected language.
+    :param request: pytest request object to access command line options
     """
-    return Urls.catalogue_page_url(language)
+    user_language = request.config.getoption("language")
+    valid_language = get_valid_language(user_language)
+    return Urls.catalogue_page_url(valid_language)
 
 
 # ===

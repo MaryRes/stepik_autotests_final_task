@@ -1,3 +1,17 @@
+SUPPORTED_LANGUAGES = {
+    'en': 'en-gb',      # Английский (основной)
+    'en-gb': 'en-gb',   # Британский английский
+    'ru': 'ru',         # Русский
+    'es': 'es',         # Испанский
+    'fr': 'fr',         # Французский
+    'de': 'de',         # Немецкий
+    'it': 'it',         # Итальянский
+    # добавьте другие поддерживаемые языки
+}
+
+DEFAULT_LANGUAGE = 'en-gb'
+
+
 translations = {
     'en': {
         'added_to_basket': "has been added to your basket.",
