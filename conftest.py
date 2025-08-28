@@ -6,6 +6,7 @@ import time
 from stepik_autotests_final_task.urls import Urls
 from stepik_autotests_final_task.problematic_urls import ProblematicUrls
 import sys
+import locale
 
 # порог для "долго" в секундах
 LONG_TEST_THRESHOLD = 1.0
@@ -208,3 +209,9 @@ def ui_bug_url(request):
 def known_broken_urls():
     """All known problematic URLs."""
     return ProblematicUrls.ALL_PROBLEMATIC_URLS
+
+
+@pytest.fixture(params=["coders-at-work_207", "the-shellcoders-handbook_209", "the-city-and-the-stars_95"])
+def product_slug(request):
+    """Фикстура с разными товарами для тестирования"""
+    return request.param

@@ -10,7 +10,7 @@ from selenium.webdriver.common.by import By
 class MainPage(BasePage):
     def __init__(self, *args, **kwargs):
         super(MainPage, self).__init__(*args, **kwargs)
-        self.wait = WebDriverWait(self.browser, timeout=10, poll_frequency=1)
+        self.wait = WebDriverWait(self.browser, timeout=4, poll_frequency=1)
 
     def should_be_basket_link_in_header(self):
         """

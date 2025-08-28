@@ -16,7 +16,7 @@ from ..decorators import Decorators
 class BasePage:
     """Базовый класс страницы. Содержит общие методы для всех страниц."""
 
-    def __init__(self, browser: WebDriver, url: str, timeout: int = 10, implicitly_wait_on: bool = True, poll_frequency=1):
+    def __init__(self, browser: WebDriver, url: str, timeout: int = 4, implicitly_wait_on: bool = True, poll_frequency=1):
         """
         :param browser: экземпляр WebDriver
         :param url: адрес страницы
@@ -25,6 +25,7 @@ class BasePage:
         """
         self.browser = browser
         self.url = url
+        self.timeout = timeout
         self.wait = WebDriverWait(browser, timeout=timeout, poll_frequency=poll_frequency)
         if implicitly_wait_on:
             self.browser.implicitly_wait(timeout)
@@ -237,3 +238,10 @@ class BasePage:
     def should_be_login_link(self):
         assert self.is_element_present(*BasePageLocators.LOGIN_LINK), "Login link is not presented"
 
+    def should_be_authorized_user(self):
+        assert self.is_element_present(*BasePageLocators.USER_ICON), "User icon is not presented," \
+                                                                     " probably unauthorised user"
+
+    def wait_for_page_load(self):
+        """Ждет полной загрузки страницы используя существующий wait"""
+        self.wait.until(lambda driver: driver.execute_script("return document.readyState") == "complete")

@@ -1,13 +1,12 @@
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
 
 from .base_page import BasePage
 from .locators import ProductPageLocators
 from ..decorators import Decorators
 
-
 import time
-
 
 
 @Decorators.print_function_name
@@ -23,7 +22,9 @@ class ProductPage(BasePage):
         super().__init__(browser, url)
         self.product_name = None
         self.product_price = None
-        self.wait = WebDriverWait(self.browser, timeout=10, poll_frequency=1)
+        self.wait = WebDriverWait(self.browser, timeout=4, poll_frequency=1)
+        self.browser = browser
+        self.url = url
 
     @Decorators.print_function_name
     @Decorators.screenshot_on_error
@@ -32,6 +33,7 @@ class ProductPage(BasePage):
         Проверяет возможность добавления товара в корзину.
         :return: None
         """
+
         self.set_product_name()
         self.set_product_price()
 
@@ -73,6 +75,75 @@ class ProductPage(BasePage):
         add_to_basket_button = self.browser.find_element(*ProductPageLocators.ADD_TO_BASKET_BTN)
         add_to_basket_button.click()
 
+    def get_basket_total_price_from_header_1(self):
+        """Просто получаем текст и убираем лишнее регуляркой"""
+        basket = self.wait.until(
+            EC.visibility_of_element_located(ProductPageLocators.BASKET_TOTAL_IN_NAVBAR)
+        )
+        message_dict = {}
+        all_messages = self.get_texts_from_elements(ProductPageLocators.BASKET_TOTAL_IN_NAVBAR)
+        # Ищем сообщения strong
+        for message in all_messages:
+            strong_text = self.get_text_from_element(ProductPageLocators.BASKET_TOTAL_IN_NAVBAR_STRONG)
+            message_dict[self.clean_text(strong_text)] = self.clean_text(message)
+        return message_dict
+
+    def get_basket_total_price_from_header(self):
+        """Получает цену из корзины - ПРОСТОЙ вариант"""
+        # Ждем контейнер корзины
+        basket_container = self.wait.until(
+            EC.visibility_of_element_located((By.CSS_SELECTOR, "div.basket-mini.pull-right"))
+        )
+
+        # Получаем ВЕСЬ текст контейнера
+        full_text = basket_container.text.strip()
+
+        # Убираем переносы строк и лишние пробелы
+        clean_text = ' '.join(full_text.split())
+
+        # Ищем цифры и валюту - это и будет цена
+        import re
+        price_match = re.search(r'[\d,\.]+\s*[£$€]?', clean_text)
+
+        if price_match:
+            return price_match.group(0).strip()
+
+        return clean_text  # fallback
+
+    def clean_text(self, text):
+        """Убирает \n и все что после него"""
+        return text.split('\n')[0]
+
+    def get_all_texsts_from_message_box(self):
+
+        message_dict = {}
+        all_messages = self.get_texts_from_elements(ProductPageLocators.MESSAGE_ELEMENT)
+        all_strong_messages = self.get_texts_from_elements(ProductPageLocators.MESSAGE_ELEMENT_STRONG)
+        # Ищем сообщения strong
+        for idx, message in enumerate(all_messages):
+            for i in range(len(all_strong_messages)):
+                compliance = self.clean_text(all_strong_messages[i])
+                if compliance in message:
+                    if r'\n' in compliance:
+                        compliance.split(r'\n')[0].strip()
+                    message_dict[self.clean_text(message)] = compliance
+                    del all_strong_messages[i]
+                    break
+        return message_dict
+
+    def get_dict_basket_total(self):
+        header = self.get_basket_total_price_from_header_1()
+        message_box = self.get_all_texsts_from_message_box()
+        coincedence = False
+        for key, value in header.items():
+            for k, v in message_box.items():
+                if v == value:
+                    coincedence = True
+                    print(f" in meddsge box {k} value {v} == {value} in heager {key}")
+        print(f"msg from header: {header}")
+        print(f"msg from message box: {message_box}")
+        assert coincedence, "price in basket box doesn´t match with price in header"
+
     @Decorators.print_function_name
     @Decorators.screenshot_on_error
     def go_to_basket_from_header(self):
@@ -93,7 +164,8 @@ class ProductPage(BasePage):
         Проверяет наличие кнопки "Добавить в корзину".
         :return: None
         """
-        assert self.is_element_present(*ProductPageLocators.ADD_TO_BASKET_BTN), "Add to basket button is not present on the page"
+        assert self.is_element_present(
+            *ProductPageLocators.ADD_TO_BASKET_BTN), "Add to basket button is not present on the page"
 
     @Decorators.print_function_name
     @Decorators.screenshot_on_error
@@ -125,7 +197,7 @@ class ProductPage(BasePage):
         all_strong_elements_in_message_box = (
             self.get_texts_from_elements(ProductPageLocators.MESSAGE_ELEMENT_STRONG))
         error_message = (f"Product name '{self.product_name}' "
-                                      f"does not match any in message box: {all_strong_elements_in_message_box}")
+                         f"does not match any in message box: {all_strong_elements_in_message_box}")
         for element in all_strong_elements_in_message_box:
             if self.product_name in element:
                 if self.product_name == element:
@@ -144,7 +216,9 @@ class ProductPage(BasePage):
         Проверяет, что цена продукта в корзине совпадает с ценой на странице.
         :return: None
         """
-        result, error_message = self.assert_exact_match(ProductPageLocators.PRODUCT_PRICE, ProductPageLocators.BASKET_TOTAL_IN_NAVBAR)
+
+        result, error_message = self.assert_exact_match(ProductPageLocators.PRODUCT_PRICE,
+                                                        ProductPageLocators.BASKET_TOTAL_IN_NAVBAR)
         if not result:
             error_message = f"Product price '{self.product_price}' does not match basket total: {error_message}"
         assert result, error_message
@@ -163,7 +237,6 @@ class ProductPage(BasePage):
                     f"Success message '{success_message}' is presented after click on product page, but should not be"
                 )
         # если ни одного совпадения нет — тест проходит
-
 
     @Decorators.print_function_name
     @Decorators.screenshot_on_error
@@ -186,5 +259,3 @@ class ProductPage(BasePage):
 
         # Если дошли до конца таймаута и сообщение всё ещё есть
         raise AssertionError(f"Success message '{success_message}' did not disappear after adding product to basket")
-
-

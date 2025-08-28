@@ -40,3 +40,22 @@ class LoginPage(BasePage):
         link = self.browser.find_element(*BasePageLocators.LOGIN_LINK)
         link.click()
 
+    def register_new_user(self, email, password):
+        """
+        Registers a new user with the provided email and password.
+        :param email: Email address for registration
+        :param password: Password for registration
+        """
+        self.browser.find_element(*LoginPageLocators.REGISTRATION_EMAIL).send_keys(email)
+        self.browser.find_element(*LoginPageLocators.REGISTRATION_PASSWORD1).send_keys(password)
+        self.browser.find_element(*LoginPageLocators.REGISTRATION_PASSWORD2).send_keys(password)
+        self.browser.find_element(*LoginPageLocators.REGISTRATION_BUTTON).click()
+
+    def login_via_api(self, email, password):
+        """
+        Logs in a user via API using the provided email and password.
+        :param email: Email address for login
+        :param password: Password for login
+        """
+        pass
+
