@@ -6,5 +6,9 @@ print(BASE_URL)
 @pytest.mark.parametrize('url', [BASE_URL])
 def test_guest_can_go_to_login_page(browser, url):
     browser.get(url)
-    login_link = browser.find_element(*BasePageLocators.LOGIN_LINK)
+    go_to_login_page(browser)
+
+
+def go_to_login_page(browser):
+    login_link = browser.find_element(BasePageLocators.LOGIN_LINK)
     login_link.click()
