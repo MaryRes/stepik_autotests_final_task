@@ -15,6 +15,7 @@ class MainPaigeLocators:
     BASKET_LINK_IN_HEADER = (By.CSS_SELECTOR, 'div[class*="basket-mini"] > span.btn-group > a[href*="basket"]')
 
 class LoginPageLocators:
+    LOGIN_LINK = (By.CSS_SELECTOR, "#login_link")
     LOGIN_FORM = (By.CSS_SELECTOR, 'form[id*="login"]')
     REGISTRATION_FORM = (By.CSS_SELECTOR, 'form[id*="register"]')
     REGISTRATION_EMAIL = (By.CSS_SELECTOR, "[id='register_form'] input[id*='registration-email']")

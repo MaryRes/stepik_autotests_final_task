@@ -1,7 +1,7 @@
 import pytest
 from .pages.login_page import LoginPage
-from .pages.locators import LoginPageLocators
-from .urls import LOGIN_PAGE_URL, BASE_URL
+from .pages.main_page import MainPaige
+from .urls import LOGIN_PAGE_URL, BASE_URL, MAIN_PAGE_URL, PRODUCT_PAGE_URL
 
 
 
@@ -27,3 +27,13 @@ def test_should_be_login_form(browser, url):
     page.open()
 
     page.should_be_login_form()
+
+@pytest.mark.new
+@pytest.mark.parametrize('url', [MAIN_PAGE_URL])
+def test_guest_can_go_to_login_page(browser, url):
+    page = MainPaige(browser, url)
+    page.open()
+    page.go_to_login_page()
+    login_page = LoginPage(browser, browser.current_url)
+    login_page.go_to_login_page()
+    login_page.should_be_login_url()

@@ -1,10 +1,17 @@
-#TODO: Реализация LoginPage
 from .base_page import BasePage
 from .locators import LoginPageLocators
 #
 
 #
 class LoginPage(BasePage):
+
+    def go_to_login_page(self):
+        """
+        Находит ссылну на страницу логина и кликает на нее
+        :return: None
+        """
+        link = self.browser.find_element(*LoginPageLocators.LOGIN_LINK)
+        link.click()
 
     def should_be_login_url(self):
         """
