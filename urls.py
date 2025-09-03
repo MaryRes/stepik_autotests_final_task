@@ -6,6 +6,6 @@ TEST_PAGE_URL = "http://selenium1py.pythonanywhere.com/catalogue/the-shellcoders
 TEST_PROMO_PRODUCT_PAGE_URL = "http://selenium1py.pythonanywhere.com/catalogue/the-shellcoders-handbook_209/?promo=newYear"
 
 
-def get_promo_urls(cls, count=10):
+def get_promo_urls(count=10):
     """Returns list of promo URLs"""
-    return [f"{cls.BASE_URL}/?promo=offer{no}" for no in range(count)]
+    return [f"{BASE_URL}/catalogue/coders-at-work_207/?promo=offer{no}" for no in range(count)]
