@@ -66,6 +66,30 @@ class ProductPage(BasePage):
         assert product_price == found_text, \
             f"Price doesn't match. Expected: '{product_price}', Got: '{found_text}'"
 
+    def should_not_be_success_message(self):
+        """
+        Проверяет отсутствие сообщения об успешном добавлении в корзину.
+        """
+        product_name = self._get_product_name()
+        locator = ProductPageLocators.message_product_is_added_successfully(product_name)
+
+        assert self.is_not_element_present(*locator), (
+            f"Success message for product '{product_name}' was found when it should not be present. "
+            "This message should only appear after adding product to basket."
+        )
+
+    def success_message_should_disappear(self):
+        """
+        Проверяет исчезновение сообщения об успешном добавлении в корзину.
+        """
+        product_name = self._get_product_name()
+        locator = ProductPageLocators.message_product_is_added_successfully(product_name)
+
+        assert self.is_disappeared(*locator), (
+            f"Success message for product '{product_name}' did not disappear within the expected time. "
+            "The message should vanish after being displayed."
+        )
+
     # === ПРИВАТНЫЕ ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ===
 
     def _update_product_data(self):
