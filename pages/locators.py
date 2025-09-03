@@ -35,7 +35,7 @@ class ProductPageLocators:
     # до и после клика на add_to_basket
     PRODUCT_NAME = (By.CSS_SELECTOR, '[class*=product_main] h1')  # до и после клика один и тот же селектор
     PRODUCT_PRICE = (
-    By.CSS_SELECTOR, '[class*="product_main"] [class*="price_color"]')  # до и после клика один и тот же селектор
+        By.CSS_SELECTOR, '[class*="product_main"] [class*="price_color"]')  # до и после клика один и тот же селектор
     # сообщения, 1 из них содержит название книги и текст, что она добавлена в корзину
     BASKET_MESSAGE_BOX = (By.CSS_SELECTOR, '[id="messages"]')
     # список элементов "хлебные крошки", в которых последним элементом должно быть название книги
@@ -61,3 +61,14 @@ class ProductPageLocators:
     # список элементов с общей ценой корзины (может содержать одиночные элементы и списки элементов,
     # содержащих цену, например, MESSAGE_ELEMENT_STRONG)
     list_of_basket_total = [BASKET_TOTAL_IN_NAVBAR, BASKET_TOTAL_IN_MESSAGE_BOX]
+
+    # Динамические локаторы через методы
+    @staticmethod
+    def message_product_is_added_successfully(product_name):
+        """
+        Локатор для сообщения об успешном добавлении товара в корзину.
+
+        :param product_name: Название продукта
+        :return: tuple: (By.XPATH, xpath_expression)
+        """
+        return By.XPATH, f'//div[contains(@class, "alertinner") and contains(., "{product_name}")]'
