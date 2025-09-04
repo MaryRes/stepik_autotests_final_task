@@ -4,6 +4,7 @@ from selenium.common.exceptions import (NoSuchElementException,
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import math
+from .locators import BasePageLocators
 
 
 class BasePage():
@@ -11,6 +12,17 @@ class BasePage():
         self.browser = browser
         self.url = url
         self.browser.implicitly_wait = timeout
+
+    def go_to_login_page(self):
+        # Ждем появления любого из элементов
+        login_link = WebDriverWait(self.browser, 10).until(
+            EC.any_of(
+                EC.presence_of_element_located(BasePageLocators.LOGIN_LINK),
+                EC.presence_of_element_located(BasePageLocators.REGISTRATION_LINK)
+            )
+        )
+        login_link.click()
+
 
     def is_disappeared(self, how, what, timeout=4):
         """
@@ -93,6 +105,23 @@ class BasePage():
         except NoAlertPresentException:
             print("No second alert presented")
 
+    def should_be_login_link(self):
+        """Проверяет наличие хотя бы одной из ссылок для входа с ожиданием"""
+        try:
+            WebDriverWait(self.browser, 10).until(
+                lambda driver: (
+                        self.is_element_present(*BasePageLocators.LOGIN_LINK) or
+                        self.is_element_present(*BasePageLocators.REGISTRATION_LINK)
+                )
+            )
+        except TimeoutException:
+            login_present = self.is_element_present(*BasePageLocators.LOGIN_LINK)
+            registration_present = self.is_element_present(*BasePageLocators.REGISTRATION_LINK)
+
+            raise AssertionError(
+                f"Ссылка для входа не появилась за 10 секунд. "
+                f"LOGIN_LINK: {login_present}, REGISTRATION_LINK: {registration_present}"
+            )
 
     def wait_for_element(self, by, selector, timeout=10):
         """
