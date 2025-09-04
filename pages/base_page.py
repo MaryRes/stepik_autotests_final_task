@@ -13,6 +13,14 @@ class BasePage():
         self.url = url
         self.browser.implicitly_wait = timeout
 
+    def go_to_basket_page(self):
+        """
+        Находит в шапке сайта ссылну на страницу корзины и кликает на нее
+        :return: None
+        """
+        link = self.browser.find_element(*BasePageLocators.BASKET_LINK_IN_HEADER)
+        link.click()
+
     def go_to_login_page(self):
         """
         Navigates to login page using either LOGIN_LINK or REGISTRATION_LINK locator.
