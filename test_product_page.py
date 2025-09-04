@@ -1,5 +1,6 @@
 import pytest
 from .pages.product_page import ProductPage
+from .pages.basket_page import BasketPage
 from .urls import TEST_PROMO_PRODUCT_PAGE_URL, BASE_URL, TEST_PAGE_URL, PRODUCT_PAGE_URL, get_promo_urls
 
 # Определяем багнутую ссылку
@@ -78,7 +79,7 @@ def test_guest_can_go_to_login_page_from_product_page(browser, url):
     page.open()
     page.go_to_login_page()
 
-@pytest.mark.new
+
 @pytest.mark.parametrize('url', [TEST_PAGE_URL, PRODUCT_PAGE_URL])
 def test_guest_should_see_login_link_on_product_page(browser, url):
     page = ProductPage(browser, url)
@@ -109,3 +110,18 @@ def test_message_disappeared_after_adding_product_to_basket(browser, url):
     page.click_add_to_basket()
     # Проверяем, что нет сообщения об успехе с помощью is_disappeared
     page.success_message_should_disappear()
+
+#@pytest.mark.new
+@pytest.mark.parametrize('url', [PRODUCT_PAGE_URL])
+def test_guest_cant_see_product_in_basket_opened_from_product_page(browser, url):
+
+    # Гость открывает страницу товара
+    page = ProductPage(browser, url)
+    page.open()
+    # Переходит в корзину по кнопке в шапке
+    page.go_to_basket_page()
+    # Ожидаем, что в корзине нет товаров
+    basket_page = BasketPage(browser, browser.current_url)
+    basket_page.should_be_basket_empty()
+    # Ожидаем, что есть текст о том что корзина пуста
+    basket_page.should_display_empty_basket_message()
