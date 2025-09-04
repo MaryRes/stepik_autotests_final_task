@@ -1,6 +1,6 @@
 import pytest
 from .pages.product_page import ProductPage
-from .urls import TEST_PROMO_PRODUCT_PAGE_URL, TEST_PAGE_URL, get_promo_urls
+from .urls import TEST_PROMO_PRODUCT_PAGE_URL, BASE_URL, TEST_PAGE_URL, PRODUCT_PAGE_URL, get_promo_urls
 
 # Определяем багнутую ссылку
 BUGGED_OFFER = "offer7"
@@ -70,6 +70,20 @@ def test_guest_cant_see_success_message_after_adding_product_to_basket(browser, 
     page.click_add_to_basket()
     # Проверяем, что нет сообщения об успехе с помощью is_not_element_present.
     page.should_not_be_success_message()
+
+
+@pytest.mark.parametrize('url', [PRODUCT_PAGE_URL])
+def test_guest_can_go_to_login_page_from_product_page(browser, url):
+    page = ProductPage(browser, url)
+    page.open()
+    page.go_to_login_page()
+
+@pytest.mark.new
+@pytest.mark.parametrize('url', [TEST_PAGE_URL, PRODUCT_PAGE_URL])
+def test_guest_should_see_login_link_on_product_page(browser, url):
+    page = ProductPage(browser, url)
+    page.open()
+    page.should_be_login_link()
 
 
 @pytest.mark.parametrize('url', [TEST_PAGE_URL])
