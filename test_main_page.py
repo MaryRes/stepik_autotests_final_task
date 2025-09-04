@@ -17,7 +17,7 @@ def test_should_be_login_link(browser, url):
     page.open()
     page.should_be_login_link()
 
-@pytest.mark.new
+
 @pytest.mark.parametrize('url', [MAIN_PAGE_URL])
 def test_guest_cant_see_product_in_basket_opened_from_main_page(browser, url):
 
