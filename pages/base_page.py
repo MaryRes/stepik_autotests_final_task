@@ -14,6 +14,15 @@ class BasePage():
         self.browser.implicitly_wait = timeout
 
     def go_to_login_page(self):
+        """
+        Navigates to login page using either LOGIN_LINK or REGISTRATION_LINK locator.
+
+        Some product pages use different selectors for login link. This method
+        handles both cases with explicit waiting.
+
+        :raises TimeoutException: If no login element appears within 10 seconds
+        :return: None
+        """
         # Ждем появления любого из элементов
         login_link = WebDriverWait(self.browser, 10).until(
             EC.any_of(
@@ -106,7 +115,23 @@ class BasePage():
             print("No second alert presented")
 
     def should_be_login_link(self):
-        """Проверяет наличие хотя бы одной из ссылок для входа с ожиданием"""
+        """
+        Verifies that at least one login link is present with explicit waiting.
+
+        Some product pages use LOGIN_LINK selector while others use REGISTRATION_LINK.
+        This method checks for both selectors with 10 seconds explicit wait.
+
+        Steps:
+        1. Waits up to 10 seconds for either LOGIN_LINK or REGISTRATION_LINK to appear
+        2. Returns silently if any login link is found
+        3. Raises AssertionError with diagnostic info if no link appears
+
+        Raises:
+            AssertionError: If neither login link selector is present after timeout
+            TimeoutException: If wait timeout occurs (handled internally)
+
+        :return: None
+        """
         try:
             WebDriverWait(self.browser, 10).until(
                 lambda driver: (
