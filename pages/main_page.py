@@ -1,7 +1,7 @@
 from selenium.webdriver.common.by import By
 
 from .base_page import BasePage
-from .locators import MainPaigeLocators
+from .locators import BasePageLocators
 
 
 class MainPage(BasePage):
@@ -11,6 +11,6 @@ class MainPage(BasePage):
         Находит в шапке сайта ссылну на страницу корзины и кликает на нее
         :return: None
         """
-        link = self.browser.find_element(*MainPaigeLocators.BASKET_LINK_IN_HEADER)
+        link = self.browser.find_element(*BasePageLocators.BASKET_LINK_IN_HEADER)
         link.click()
 
