@@ -14,3 +14,5 @@ class MainPage(BasePage):
         link = self.browser.find_element(*BasePageLocators.BASKET_LINK_IN_HEADER)
         link.click()
 
+    def should_be_login_link(self):
+        self.browser.find_element(*BasePageLocators.LOGIN_LINK)
