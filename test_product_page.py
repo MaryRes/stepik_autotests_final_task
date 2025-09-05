@@ -17,6 +17,37 @@ for url in all_urls:
         test_data.append(url)
 
 
+@pytest.mark.parametrize('url', [TEST_PAGE_URL])
+class TestUserAddToBasketFromProductPage:
+    def test_user_cant_see_success_message(self, browser, url):
+        # Открываем страницу товара
+        page = ProductPage(browser, url)
+        page.open()
+        # Проверяем, что нет сообщения об успехе с помощью is_not_element_present
+        page.should_not_be_success_message()
+
+    def test_user_can_add_product_to_basket(self, browser, url):
+        page = ProductPage(browser, url)
+        page.open()
+
+        # проверить, что есть кнопка добавить в корзину
+        page.should_be_add_to_basket_button()
+
+        page.click_add_to_basket()
+        # *Посчитать результат математического выражения и ввести ответ.
+        page.solve_quiz_and_get_code()
+        # Ожидаемый результат:
+        # Сообщение о том, что товар добавлен в корзину.
+        page.should_be_success_message()
+        # Название товара в сообщении должно совпадать с тем товаром,
+        # который вы действительно добавили.
+        page.should_have_correct_product_name_in_message_box()
+        # Сообщение со стоимостью корзины.
+        page.should_show_basket_total_message()
+        # Стоимость корзины совпадает с ценой товара.
+        page.should_have_correct_price_in_message_box()
+
+
 @pytest.mark.parametrize('url', test_data)
 def test_guest_can_add_product_to_basket(browser, url):
     page = ProductPage(browser, url)
@@ -111,10 +142,10 @@ def test_message_disappeared_after_adding_product_to_basket(browser, url):
     # Проверяем, что нет сообщения об успехе с помощью is_disappeared
     page.success_message_should_disappear()
 
-@pytest.mark.new
+
+#@pytest.mark.new
 @pytest.mark.parametrize('url', [PRODUCT_PAGE_URL])
 def test_guest_cant_see_product_in_basket_opened_from_product_page(browser, url):
-
     # Гость открывает страницу товара
     page = ProductPage(browser, url)
     page.open()
