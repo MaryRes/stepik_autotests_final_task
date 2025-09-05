@@ -111,13 +111,14 @@ def test_message_disappeared_after_adding_product_to_basket(browser, url):
     # Проверяем, что нет сообщения об успехе с помощью is_disappeared
     page.success_message_should_disappear()
 
-#@pytest.mark.new
+@pytest.mark.new
 @pytest.mark.parametrize('url', [PRODUCT_PAGE_URL])
 def test_guest_cant_see_product_in_basket_opened_from_product_page(browser, url):
 
     # Гость открывает страницу товара
     page = ProductPage(browser, url)
     page.open()
+    page.click_add_to_basket()
     # Переходит в корзину по кнопке в шапке
     page.go_to_basket_page()
     # Ожидаем, что в корзине нет товаров
