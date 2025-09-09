@@ -12,7 +12,6 @@ PAGE OBJECT МОДЕЛЬ СТРАНИЦЫ КОРЗИНЫ ПОКУПОК
 - Анализ текстовых сообщений о состоянии корзины
 """
 
-from typing import None
 
 # Импорты Page Object моделей и локаторов
 from .base_page import BasePage

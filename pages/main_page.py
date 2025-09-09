@@ -12,7 +12,6 @@ PAGE OBJECT МОДЕЛЬ ГЛАВНОЙ СТРАНИЦЫ САЙТА
 - Обеспечение доступа к ключевым разделам магазина через UI-элементы
 """
 
-from typing import None
 
 # Импорты Page Object моделей и локаторов
 from .base_page import BasePage

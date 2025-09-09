@@ -14,9 +14,6 @@ PAGE OBJECT МОДЕЛЬ СТРАНИЦЫ ЛОГИНА И РЕГИСТРАЦИИ
 """
 
 import time
-from typing import
-
-None
 
 # Импорты Page Object моделей и локаторов
 from .base_page import BasePage
