@@ -1,7 +1,11 @@
 import pytest
 from .pages.product_page import ProductPage
 from .pages.basket_page import BasketPage
-from .urls import TEST_PROMO_PRODUCT_PAGE_URL, BASE_URL, TEST_PAGE_URL, PRODUCT_PAGE_URL, get_promo_urls
+from .urls import (TEST_PROMO_PRODUCT_PAGE_URL, BASE_URL,
+                   TEST_PAGE_URL, PRODUCT_PAGE_URL, get_promo_urls, LOGIN_PAGE_URL)
+from .pages.login_page import LoginPage
+from .pages.base_page import BasePage
+import time
 
 # Определяем багнутую ссылку
 BUGGED_OFFER = "offer7"
@@ -16,9 +20,22 @@ for url in all_urls:
     else:
         test_data.append(url)
 
-
-@pytest.mark.parametrize('url', [TEST_PAGE_URL])
+@pytest.mark.new
+@pytest.mark.parametrize('url', [PRODUCT_PAGE_URL])
 class TestUserAddToBasketFromProductPage:
+
+    @pytest.fixture(scope="function", autouse=True)
+    def setup(self, browser):
+
+        # открыть страницу регистрации;
+        login_page = LoginPage(browser, LOGIN_PAGE_URL)
+        login_page.open()
+
+        # зарегистрировать нового пользователя;
+        login_page.register_new_user()
+        # проверить, что пользователь залогинен.
+        login_page.should_be_authorized_user()
+
     def test_user_cant_see_success_message(self, browser, url):
         # Открываем страницу товара
         page = ProductPage(browser, url)
