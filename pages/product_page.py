@@ -1,3 +1,5 @@
+from selenium.common import TimeoutException
+
 from .base_page import BasePage
 from .locators import ProductPageLocators
 
@@ -27,7 +29,18 @@ class ProductPage(BasePage):
 
     def should_be_success_message(self):
         """Проверяет сообщение об успешном добавлении в корзину"""
-        product_name = self._get_product_name()
+
+        product_name = self.product_data['name']
+
+        # Ждем появление хотя бы одного элемента сообщения
+        try:
+            self.wait_for_element(*ProductPageLocators.MESSAGE_ELEMENT)
+        except TimeoutException:
+            assert False, (
+                f"No success messages found at all. "
+                f"Expected message containing: '{product_name}'"
+            )
+
         message_element, all_messages = self._find_message_containing_text(
             ProductPageLocators.MESSAGE_ELEMENT,
             product_name,
