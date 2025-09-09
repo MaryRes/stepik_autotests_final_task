@@ -1,7 +1,32 @@
 [tool.commitizen]
 name = "cz_conventional_commits"
-tag_format = "$version"
+tag_format = "v$version"
 version_scheme = "semver"
-version = "0.0.1"
+version = "0.1.0"  # Обновил с 0.0.1 на 0.1.0 после добавления фич
 update_changelog_on_bump = true
 major_version_zero = true
+annotated_tag = true  # Добавил для лучших практик
+changelog_file = "CHANGELOG.md"  # Явно указываем файл changelog
+changelog_incremental = true
+version_files = [
+    "pyproject.toml:version"  # Автоматическое обновление версии здесь же
+]
+
+[tool.commitizen.customize]
+message_template = "{{change_type}}: {{message}}"
+example = "feat: add new authentication system"
+schema = "<type>: <body>"
+schema_pattern = "(feat|fix|docs|style|refactor|test|chore|ci|build|perf): .+"
+
+# Опционально: настройки для разных типов изменений
+[tool.commitizen.type_map]
+feat = "Features"
+fix = "Bug Fixes"
+docs = "Documentation"
+style = "Styles"
+refactor = "Code Refactoring"
+test = "Tests"
+chore = "Chores"
+ci = "Continuous Integration"
+build = "Build System"
+perf = "Performance Improvements"
