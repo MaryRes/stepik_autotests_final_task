@@ -45,6 +45,6 @@ if __name__ == "__main__":
     os.chdir(project_root)
 
     structure = generate_project_structure()
-    print("Структура проекта:\n")
+    print("Структура проекта:a\n")
     for line in structure:
         print(line)
