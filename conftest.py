@@ -112,6 +112,8 @@ def get_browser_settings(
     if browser_name == "chrome":
         logger.debug("🚀 Запуск Chrome браузера с языком: %s", user_language)
         chrome_options = ChromeOptions()
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
 
         # Настройки языка
         chrome_options.add_experimental_option('prefs', {
