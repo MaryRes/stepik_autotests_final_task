@@ -1,0 +1,28 @@
+name: Run Autotests # Название workflow
+
+on: # Запускать при любом пуше в ветку review и при любом PR в review
+  push:
+    branches: [ review ]
+  pull_request:
+    branches: [ review ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest # Запускать на последней Ubuntu
+
+    steps:
+    - name: Checkout code # Шаг 1: Достать код из репозитория
+      uses: actions/checkout@v4
+
+    - name: Set up Python # Шаг 2: Установить Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies # Шаг 3: Установить зависимости
+      run: |
+        pip install -r requirements.txt
+
+    - name: Run review tests # Шаг 4: Запустить ТОЛЬКО тесты для ревью
+      run: |
+        pytest -v --headless --tb=line --language=en -m need_review

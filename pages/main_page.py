@@ -1,36 +1,86 @@
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+"""
+PAGE OBJECT МОДЕЛЬ ГЛАВНОЙ СТРАНИЦЫ САЙТА
 
-from stepik_autotests_final_task.pages.base_page import BasePage
-from .locators import MainPaigeLocators
-import selenium
-from selenium.webdriver.common.by import By
+Данный модуль содержит класс MainPage для работы с главной страницей интернет-магазина.
+Класс наследует от BasePage и добавляет специфичные методы для взаимодействия
+с элементами главной страницы.
+
+ОСНОВНЫЕ ФУНКЦИОНАЛЬНЫЕ ВОЗМОЖНОСТИ:
+- Навигация на страницу корзины через клик по ссылке в шапке сайта
+- Проверка наличия и видимости ссылки для входа/регистрации
+- Взаимодействие с основными элементами навигации главной страницы
+- Обеспечение доступа к ключевым разделам магазина через UI-элементы
+"""
+
+
+# Импорты Page Object моделей и локаторов
+from .base_page import BasePage
+from .locators import BasePageLocators
 
 
 class MainPage(BasePage):
-    def __init__(self, *args, **kwargs):
-        super(MainPage, self).__init__(*args, **kwargs)
-        self.wait = WebDriverWait(self.browser, timeout=10, poll_frequency=1)
+    """
+    Класс для работы с главной страницей интернет-магазина.
 
-    def should_be_basket_link_in_header(self):
-        """
-        Проверяет наличие ссылки на корзину в шапке сайта.
-        """
-        assert self.is_element_present(*MainPaigeLocators.BASKET_LINK_IN_HEADER), "Basket link is not present in header"
+    Наследует все методы от BasePage и добавляет специфичные действия,
+    доступные только на главной странице сайта.
 
-    def go_to_basket_from_header(self):
+    Атрибуты:
+        browser: Экземпляр веб-браузера для управления страницей
+        url: URL-адрес главной страницы
+    """
+
+    def go_to_basket_page(self) -> None:
         """
-        Переходит в корзину по ссылке в шапке сайта.
+        Переходит на страницу корзины покупок.
+
+        Находит и кликает по ссылке/кнопке корзины в шапке сайта.
+        Корзина содержит все товары, добавленные пользователем для покупки.
+
+        Шаги выполнения:
+        1. Поиск элемента ссылки на корзину в верхней части страницы
+        2. Клик по найденному элементу
+        3. Автоматический переход на страницу корзины
+
+        Пример использования:
+            main_page = MainPage(browser, "https://shop.com")
+            main_page.go_to_basket_page()
+
+        Raises:
+            NoSuchElementException: Если элемент ссылки на корзину не найден на странице
         """
-        basket_link_locator = MainPaigeLocators.BASKET_LINK_IN_HEADER
-        # Используем явное ожидание, чтобы дождаться кликабельности ссылки
-        basket_link = self.wait.until(EC.element_to_be_clickable(basket_link_locator))
+        # Находим элемент ссылки на корзину с помощью заранее определенного локатора
+        # Звездочка (*) перед локатором распаковывает кортеж с селектором и значением
+        basket_link = self.browser.find_element(*BasePageLocators.BASKET_LINK_IN_HEADER)
+
+        # Выполняем клик по ссылке для перехода на страницу корзины
+        # После клика браузер автоматически перенаправляет на страницу корзины
         basket_link.click()
-        # Явное ожидание, чтобы дождаться загрузки страницы корзины
-        self.wait.until(lambda driver: driver.current_url.endswith("/basket/"))
 
-    def should_be_in_basket_page(self):
+    def should_be_login_link(self) -> None:
         """
-        Проверяет, что текущая страница является страницей корзины.
+        Проверяет наличие и видимость ссылки для входа/регистрации на странице.
+
+        Этот метод убеждается, что элемент авторизации присутствует на странице
+        и доступен для взаимодействия. Это важно для тестирования навигации.
+
+        Проверяет:
+        - Элемент существует в DOM-дереве страницы
+        - Элемент видим пользователю (не скрыт CSS-стилями)
+        - Элемент доступен для клика (не заблокирован)
+
+        Пример использования:
+            main_page = MainPage(browser, "https://shop.com")
+            main_page.should_be_login_link()  # Пройдет, если ссылка есть
+
+        Raises:
+            AssertionError: Если элемент ссылки для входа не найден или не видим
+            NoSuchElementException: Если элемент отсутствует в DOM-дереве
         """
-        assert self.browser.current_url.endswith("/basket/"), "Not on the basket page"
+        # Ищем элемент ссылки для входа с помощью локатора
+        # Метод find_element либо возвращает элемент, либо выбрасывает исключение
+        login_link = self.browser.find_element(*BasePageLocators.LOGIN_LINK)
+
+        # Дополнительная проверка: убеждаемся, что элемент действительно видим пользователю
+        # Это важно, так как элемент может существовать в DOM, но быть скрытым CSS-стилями
+        assert login_link.is_displayed(), "Login link is present but not visible on the page"

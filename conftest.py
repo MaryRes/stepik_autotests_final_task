@@ -1,210 +1,182 @@
+"""
+CONFTEST.PY - КОНФИГУРАЦИЯ PYTEST И ФИКСТУРЫ ДЛЯ ТЕСТИРОВАНИЯ
+
+Данный модуль содержит:
+- Настройки командной строки для pytest
+- Фикстуру браузера с поддержкой разных браузеров и языков
+- Конфигурацию WebDriver Manager для автоматического управления драйверами
+"""
+
 import pytest
+import logging
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from .translations import translations, SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE
-import time
-from stepik_autotests_final_task.urls import Urls
-from stepik_autotests_final_task.problematic_urls import ProblematicUrls
-import sys
+from webdriver_manager.firefox import GeckoDriverManager
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.firefox.service import Service as FirefoxService
+from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from typing import Generator, Any
 
-# порог для "долго" в секундах
-LONG_TEST_THRESHOLD = 1.0
+# Настройка логгера
+logger = logging.getLogger(__name__)
 
-def pytest_addoption(parser):
-    """Добавление опций командной строки для выбора браузера, языка и headless/headed режима."""
 
-    parser.addoption('--browser_name', action='store', default='chrome',
-                     help="Choose browser: chrome or firefox")
+def pytest_addoption(parser: pytest.Parser) -> None:
+    """
+    Добавляет кастомные опции командной строки для pytest.
 
-    parser.addoption('--language', action='store', default='en-gb',
-                     help="Choose language: ru, en-gb, es, fr, etc.")
+    Args:
+        parser: Парсер аргументов командной строки pytest
+    """
+    parser.addoption(
+        '--browser_name',
+        action='store',
+        default="chrome",
+        choices=["chrome", "firefox"],
+        help="Выберите браузер для тестов: chrome или firefox"
+    )
+    parser.addoption(
+        '--language',
+        action='store',
+        default='en',
+        help='Выберите язык интерфейса: en, ru, es, fi, fr, de и т.д.'
+    )
+    parser.addoption(
+        '--headless',
+        action='store_true',
+        default=False,
+        help='Запуск браузера в headless-режиме (без графического интерфейса)'
+    )
 
-    parser.addoption('--headed', action='store_true', default=False,
-                     help="Run browser in headed (non-headless) mode")
 
 @pytest.fixture(scope="function")
-def browser(request):
-    """Фикстура для запуска браузера с заданными параметрами."""
+def browser(request: pytest.FixtureRequest) -> Generator[webdriver.Remote, None, None]:
+    """
+    Фикстура для инициализации и закрытия браузера.
 
-    # Получаем параметры командной строки
+    Создает экземпляр браузера с указанными настройками и автоматически
+    закрывает его после завершения теста.
+
+    Args:
+        request: Объект запроса фикстуры pytest
+
+    Yields:
+        webdriver.Remote: Экземпляр WebDriver для тестирования
+
+    Raises:
+        pytest.UsageError: При указании неподдерживаемого браузера
+    """
     browser_name = request.config.getoption("browser_name")
     user_language = request.config.getoption("language")
+    headless = request.config.getoption("headless")
 
-    # Автоматически определяем валидный язык
-    valid_language = get_valid_language(user_language)
+    logger.info("🔄 Инициализация браузера: %s, язык: %s", browser_name, user_language)
 
-    if user_language != valid_language:
-        print(f"⚠️  Язык '{user_language}' не поддерживается. Используется '{valid_language}'")
+    # Получаем настройки браузера
+    driver = get_browser_settings(browser_name, user_language, headless)
 
-    # Проверяем есть ли маркер headed у теста
-    has_headed_marker = request.node.get_closest_marker('headed') is not None
+    # Устанавливаем неявные ожидания по умолчанию
+    driver.implicitly_wait(10)
 
-    # Если тест помечен headed или явно указан --headed
-    headed = request.config.getoption("--headed") or has_headed_marker # True если указана --headed
+    # Максимизируем окно браузера
+    driver.maximize_window()
 
-    print(f"\nstart {browser_name} browser for test..")
+    yield driver
 
-    # Инициализируем браузер в зависимости от выбранного
+    # Завершение работы браузера
+    logger.info("🛑 Завершение работы браузера")
+    print("\nquit browser..")
+    driver.quit()
+
+
+def get_browser_settings(
+        browser_name: str = 'chrome',
+        user_language: str = 'en',
+        headless: bool = False
+) -> webdriver.Remote:
+    """
+    Создает и настраивает экземпляр WebDriver с указанными параметрами.
+
+    Args:
+        browser_name: Название браузера ('chrome' или 'firefox')
+        user_language: Язык интерфейса браузера
+        headless: Флаг headless-режима
+
+    Returns:
+        webdriver.Remote: Настроенный экземпляр WebDriver
+
+    Raises:
+        pytest.UsageError: При указании неподдерживаемого браузера
+    """
     if browser_name == "chrome":
-        options = Options()
-        options.add_experimental_option('prefs', {'intl.accept_languages': user_language})
-        options.add_argument('window-size=1920x935')   # Устанавливаем размер окна
+        logger.debug("🚀 Запуск Chrome браузера с языком: %s", user_language)
+        chrome_options = ChromeOptions()
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
 
-        if not headed:
-            options.add_argument('headless')  # headless по умолчанию
+        # Настройки языка
+        chrome_options.add_experimental_option('prefs', {
+            'intl.accept_languages': f'en,{user_language}'
+        })
 
-        browser = webdriver.Chrome(options=options)
+        # Headless режим
+        if headless:
+            chrome_options.add_argument('--headless=new')
+            chrome_options.add_argument('--no-sandbox')
+            chrome_options.add_argument('--disable-dev-shm-usage')
+
+        # Дополнительные опции для стабильности
+        chrome_options.add_argument('--disable-gpu')
+        chrome_options.add_argument('--window-size=1920,1080')
+        chrome_options.add_argument('--disable-infobars')
+        chrome_options.add_argument('--disable-extensions')
+
+        browser = webdriver.Chrome(
+            service=ChromeService(ChromeDriverManager().install()),
+            options=chrome_options
+        )
 
     elif browser_name == "firefox":
-        options = webdriver.FirefoxOptions()
-        options.set_preference("intl.accept_languages", user_language)
-        options.add_argument('--width=1920')
-        options.add_argument('--height=935')
+        logger.debug("🚀 Запуск Firefox браузера с языком: %s", user_language)
+        firefox_options = FirefoxOptions()
 
-        if not headed:
-            options.add_argument('--headless')  # headless по умолчанию
+        # Настройки языка
+        firefox_options.set_preference('intl.accept_languages', f'en,{user_language}')
 
-        browser = webdriver.Firefox(options=options)
+        # Headless режим
+        if headless:
+            firefox_options.add_argument('--headless')
+
+        # Дополнительные настройки
+        firefox_options.set_preference('dom.webnotifications.enabled', False)
+
+        browser = webdriver.Firefox(
+            service=FirefoxService(GeckoDriverManager().install()),
+            options=firefox_options
+        )
 
     else:
-        raise pytest.UsageError("--browser_name should be chrome or firefox")
+        error_msg = f"Неподдерживаемый браузер: {browser_name}. Используйте chrome или firefox"
+        logger.error(error_msg)
+        raise pytest.UsageError(error_msg)
 
-    yield browser
-    print("\nquit browser..")
-    browser.quit()
-
-def get_system_language():
-    """Получает язык системы."""
-    try:
-        system_lang, _ = locale.getdefaultlocale()
-        if system_lang:
-            return system_lang.lower()
-    except:
-        pass
-    return DEFAULT_LANGUAGE
-
-def get_valid_language(user_language):
-    """
-    Определяет валидный язык на основе пользовательских настроек.
-    Если язык не поддерживается, возвращает английский.
-    """
-    if not user_language or user_language == 'auto':
-        user_language = get_system_language()
-    # Проверяем полное совпадение
-    if user_language in SUPPORTED_LANGUAGES:
-        return SUPPORTED_LANGUAGES[user_language]
-
-    # Проверяем основную часть языка (например, 'en' из 'en-US')
-    language_base = user_language.split('-')[0].lower()
-    if language_base in SUPPORTED_LANGUAGES:
-        return SUPPORTED_LANGUAGES[language_base]
-
-    # Если язык не найден, возвращаем английский
-    return DEFAULT_LANGUAGE
-
-@pytest.fixture(scope="function")
-def translation_fixture(request):
-    """Фикстура для получения переводов в зависимости от выбранного языка."""
-    user_language = request.config.getoption("language")
-    valid_language = get_valid_language(user_language)
-    return translations.get(valid_language, translations[DEFAULT_LANGUAGE])
+    return browser
 
 
-@pytest.fixture(autouse=True)
-def timer(request):
-    """Фикстура для замера времени выполнения каждого теста с выводом URL страницы."""
-    start = time.time()
-    yield
-    end = time.time()
-    duration = end - start
-    test_name = request.node.name
-
-    # Пытаемся получить URL страницы
-    url = None
-    if 'page' in request.node.funcargs:
-        page = request.node.funcargs['page']
-        url = getattr(page, 'url', None)
-    elif 'link' in request.node.funcargs:
-        url = request.node.funcargs['link']
-
-    url_str = f" | URL: {url}" if url else ""
-
-    if duration > LONG_TEST_THRESHOLD:
-        print(f"\n⏱ [SLOW TEST] {test_name}{url_str} took {duration:.3f} seconds")
-    else:
-        print(f"\n⏱ {test_name}{url_str} took {duration:.3f} seconds")
+# Дополнительные хуки для улучшения тестирования
+def pytest_configure(config: pytest.Config) -> None:
+    """Конфигурация pytest при запуске."""
+    config.addinivalue_line(
+        "markers", "slow: маркировка медленных тестов (пропускать при --fast)"
+    )
 
 
-def pytest_collection_modifyitems(config, items):
-    pass
-    #if not config.getoption("--headed"):
-        #for item in items:
-            #if "headed" in item.keywords:
-                #pytest.skip(f"Тест пропущен, так как не выбран режим headed: {item.name}")
-
-# ===
-# get links
-@pytest.fixture(scope="function")
-def main_page_url(request) -> str:
-    """Returns the main page URL for the detected language.
-    :param request: pytest request object to access command line options
-    """
-    user_language = request.config.getoption("language")
-    valid_language = get_valid_language(user_language)
-    return Urls.main_page_url(valid_language)
-
-@pytest.fixture(scope="function")
-def login_page_url(request) -> str:
-    """Returns the login page URL for the detected language.
-    :param request: pytest request object to access command line options
-    """
-    user_language = request.config.getoption("language")
-    valid_language = get_valid_language(user_language)
-    return Urls.login_page_url(valid_language)
-
-@pytest.fixture(scope="function")
-def product_page_url(product_slug: str, request) -> str:
-    """
-    Returns the product page URL for the detected language.
-    :param product_slug: Slug of the product
-    :param request: pytest request object to access command line options
-    """
-    user_language = request.config.getoption("language")
-    valid_language = get_valid_language(user_language)
-    return Urls.product_page_url(product_slug, valid_language)
-
-@pytest.fixture(scope="function")
-def basket_page_url(request) -> str:
-    """
-    Returns the basket page URL for the detected language.
-    :param request: pytest request object to access command line options
-    """
-    user_language = request.config.getoption("language")
-    valid_language = get_valid_language(user_language)
-    return Urls.basket_page_url(valid_language)
-
-@pytest.fixture(scope="function")
-def catalogue_page_url(request) -> str:
-    """
-    Returns the catalogue page URL for the detected language.
-    :param request: pytest request object to access command line options
-    """
-    user_language = request.config.getoption("language")
-    valid_language = get_valid_language(user_language)
-    return Urls.catalogue_page_url(valid_language)
+def pytest_sessionstart(session: pytest.Session) -> None:
+    """Действия при начале тестовой сессии."""
+    logger.info("🎬 Начало тестовой сессии")
 
 
-# ===
-@pytest.fixture(params=ProblematicUrls.UI_BUGS.items())
-def ui_bug_url(request):
-    """
-    Fixture to provide URLs that are known to have UI bugs.
-    :return: Tuple of (URL, description)
-    """
-    bug_name, url = request.param
-    return bug_name, url
-
-@pytest.fixture
-def known_broken_urls():
-    """All known problematic URLs."""
-    return ProblematicUrls.ALL_PROBLEMATIC_URLS
+def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
+    """Действия при завершении тестовой сессии."""
+    logger.info("🏁 Завершение тестовой сессии с статусом: %s", exitstatus)

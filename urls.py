@@ -1,88 +1,39 @@
+"""
+МОДУЛЬ URL-АДРЕСОВ ДЛЯ ТЕСТИРОВАНИЯ
 
-class Urls:
+Содержит все URL-адреса, используемые в тестах.
+Централизованное хранение URL упрощает поддержку и обновление тестов.
 
-    """A class to manage a list of URLs."""
+ВСЕ URL ДОЛЖНЫ ХРАНИТЬСЯ ЗДЕСЬ - избегаем hardcoded ссылок в тестах!
+"""
 
-    BASE_URL = "http://selenium1py.pythonanywhere.com"
-    PROMO_BASE_URL = f"{BASE_URL}/catalogue/coders-at-work_207"
+from typing import List
 
-    # Генерация promo URLs лениво (при обращении)
-    @classmethod
-    def get_promo_urls(cls, count=10):
-        """Returns list of promo URLs"""
-        return [f"{cls.PROMO_BASE_URL}/?promo=offer{no}" for no in range(count)]
+# Базовый URL тестового приложения
+BASE_URL: str = "http://selenium1py.pythonanywhere.com"
 
+# Основные страницы приложения
+LOGIN_PAGE_URL: str = f"{BASE_URL}/fi/accounts/login/"
+MAIN_PAGE_URL: str = BASE_URL  # Главная страница совпадает с базовым URL
+PRODUCT_PAGE_URL: str = f"{BASE_URL}/en-gb/catalogue/the-city-and-the-stars_95/"
 
-    def __init__(self):
-        self.urls = []
-
-    def add_url(self, url):
-        self.urls.append(url)
-
-    def get_urls(self):
-        return self.urls
-
-    @staticmethod
-    def get_localized_url(language: str = "en-gb") -> str:
-        """
-        Returns the localized URL based on the provided language.
-        :param language: Language code (e.g., 'en', 'fi', etc.)
-        :return: Localized URL
-        """
-        # Преобразуем формат языка (например, 'en-gb' -> 'en')
-        locale = language.split('-')[0] if '-' in language else language
-
-        # Для английского часто нет префикса /en/
-        if locale == "en":
-            return f"{Urls.BASE_URL}/"
-        else:
-            return f"{Urls.BASE_URL}/{locale}/"
+# Тестовые страницы для различных сценариев
+TEST_PAGE_URL: str = f"{BASE_URL}/catalogue/the-shellcoders-handbook_209?promo=midsummer"
+TEST_PROMO_PRODUCT_PAGE_URL: str = f"{BASE_URL}/catalogue/the-shellcoders-handbook_209/?promo=newYear"
 
 
-    @staticmethod
-    def main_page_url(language: str = "en-gb") -> str:
-        """
-        Returns the main page URL for the specified language.
-        :param language: Language code (default is 'en')
-        :return: Main page URL
-        """
-        return f"{Urls.get_localized_url(language)}"
+def get_promo_urls(count: int = 10) -> List[str]:
+    """
+    Генерирует список промо-URL для тестирования различных акционных предложений.
 
-    @staticmethod
-    def login_page_url(language: str = "en-gb") -> str:
-        """
-        Returns the login page URL for the specified language.
-        :param language: Language code (default is 'en')
-        :return: Login page URL
-        """
-        return f"{Urls.get_localized_url(language)}accounts/login/"
+    Используется для параметризованных тестов, проверяющих функциональность
+    корзины на разных промо-страницах.
 
+    Args:
+        count: Количество генерируемых URL (по умолчанию 10)
 
-    @staticmethod
-    def product_page_url(product_slug: str, language: str = "en-gb") -> str:
-        """
-        Returns the product page URL for the specified product slug and language.
-        :param product_slug: Slug of the product
-        :param language: Language code (default is 'en')
-        :return: Product page URL
-        """
-        return f"{Urls.get_localized_url(language)}catalogue/{product_slug}/"
-
-
-    @staticmethod
-    def basket_page_url(language: str = "en-gb") -> str:
-        """
-        Returns the basket page URL for the specified language.
-        :param language: Language code (default is 'en')
-        :return: Basket page URL
-        """
-        return f"{Urls.get_localized_url(language)}basket/"
-
-    @staticmethod
-    def catalogue_page_url(language: str = "en-gb") -> str:
-        """
-        Returns the catalogue page URL for the specified language.
-        :param language: Language code (default is 'en-gb')
-        :return: Catalogue page URL
-        """
-        return f"{Urls.get_localized_url(language)}catalogue/"
+    Returns:
+        List[str]: Список промо-URL в формате:
+        http://selenium1py.pythonanywhere.com/catalogue/coders-at-work_207/?promo=offer{number}
+    """
+    return [f"{BASE_URL}/catalogue/coders-at-work_207/?promo=offer{no}" for no in range(count)]
