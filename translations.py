@@ -9,7 +9,7 @@ SUPPORTED_LANGUAGES = {
     # добавьте другие поддерживаемые языки
 }
 
-DEFAULT_LANGUAGE = 'en-gb'
+DEFAULT_LANGUAGE = 'en'
 
 
 translations = {
@@ -19,6 +19,12 @@ translations = {
         'basket_qualifies_part': "Your basket now qualifies for the  offer.",
         'basket_is_empty': "Your basket is empty."
 
+    },
+    'en-gb': {
+        'added_to_basket': "has been added to your basket.",
+        'basket_total': "Your basket total is now ",
+        'basket_qualifies_part': "Your basket now qualifies for the  offer.",
+        'basket_is_empty': "Your basket is empty."
     },
     'fr': {
         'added_to_basket': " a été ajouté à votre panier."
