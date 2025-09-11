@@ -90,6 +90,8 @@ class TestProductPage:
         # 6️⃣ Check product price in the message
         page.should_match_product_price_in_basket()
 
+    @pytest.mark.xfail(
+        reason="Сообщение об успехе ДОЛЖНО появляться после добавления товара, этот тест проверяет обратное поведение")
     @pytest.mark.ui
     @pytest.mark.parametrize("link", [product_base_link])
     @Decorators.no_implicit_wait
@@ -141,6 +143,8 @@ class TestProductPage:
 
         page.should_not_be_success_message(added_to_basket_message)
 
+    @pytest.mark.xfail(
+        reason="Сообщение об успехе ДОЛЖНО появляться после добавления товара, этот тест проверяет обратное поведение")
     @pytest.mark.ui
     @pytest.mark.parametrize("link", [product_base_link])
     @Decorators.no_implicit_wait
