@@ -25,4 +25,4 @@ jobs:
 
     - name: Run review tests # Шаг 4: Запустить ТОЛЬКО тесты для ревью
       run: |
-        pytest -v --tb=line --language=en -m need_review
+        pytest -v --headless --tb=line --language=en -m need_review
